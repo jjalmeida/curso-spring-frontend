@@ -6,12 +6,13 @@ import { CartItem } from '../../models/cart-item';
 import { CartService } from '../../services/domain/cart.service';
 import { ClienteDTO } from '../../models/cliente.dto';
 import { EnderecoDTO } from '../../models/endereco.dto';
+import { PedidoService } from '../../services/domain/pedido.service';
 
 
 @IonicPage()
 @Component({
   selector: 'page-order-confirmation',
-  templateUrl: 'order-confirmation.html',
+  templateUrl: 'order-confirmation.html'
 })
 export class OrderConfirmationPage {
 
@@ -23,7 +24,8 @@ export class OrderConfirmationPage {
   constructor(public navCtrl: NavController, 
               public navParams: NavParams,
               public cartService: CartService,
-              public clienteService: ClienteService) {
+              public clienteService: ClienteService,
+              public pedidoSercice: PedidoService) {
     this.pedido = this.navParams.get('pedido');
   }
 
@@ -46,6 +48,23 @@ export class OrderConfirmationPage {
 
   total(){
     return this.cartService.total();
+  }
+
+  checkout(){
+    this.pedidoSercice.insert(this.pedido)
+      .subscribe(response => {
+        this.cartService.createOrClearCart();
+        console.log(response.headers.get('location'));
+      },
+      error => {
+        if(error.status == 403){
+          this.navCtrl.setRoot('HomePage');
+        }
+      });
+  }
+
+  back(){
+    this.navCtrl.setRoot('CartPage');
   }
 
 }
